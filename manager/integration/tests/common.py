@@ -1231,15 +1231,19 @@ def csi_pv_backingimage(request):
 
 
 def check_pvc_in_specific_status(api, pvc_name, status):
-    for i in range(RETRY_EXEC_COUNTS):
+    status_matched = False
+    for _ in range(RETRY_EXEC_COUNTS):
+        if status_matched:
+            break
+
         claim = \
             api.read_namespaced_persistent_volume_claim(name=pvc_name,
                                                         namespace='default')
-        if claim.status.phase == "bound":
-            break
+        if claim.status.phase == status:
+            status_matched = True
         time.sleep(RETRY_INTERVAL)
 
-    assert claim.status.phase == status
+    assert status_matched == True
 
 
 def get_pvc_manifest(request):
